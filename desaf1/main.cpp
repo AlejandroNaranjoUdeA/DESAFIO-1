@@ -5,38 +5,35 @@ using namespace std;
 
 const int HEADER_SIZE = 54;
 
+// === Cargar imagen BMP de 24 bits ===
 bool cargarBMP(const char* ruta, unsigned char* header, unsigned char*& data, int& dataSize) {
     ifstream file(ruta, ios::binary);
     if (!file) return false;
 
-    // Leer encabezado (54 bytes)
     file.read((char*)header, HEADER_SIZE);
 
-    // Validar que sea BMP (primeros dos bytes deben ser 'B' y 'M')
     if (header[0] != 'B' || header[1] != 'M') {
         cout << "Archivo no es un BMP válido." << endl;
             return false;
     }
 
-    // Leer ancho, alto y tamaño de imagen desde el header
     int offset = *(int*)&header[10];
     dataSize = *(int*)&header[34];
-    if (dataSize == 0) { // A veces el tamaño no está en el header
+    if (dataSize == 0) {
         int width = *(int*)&header[18];
         int height = *(int*)&header[22];
-        int rowSize = ((24 * width + 31) / 32) * 4; // filas alineadas a múltiplos de 4 bytes
+        int rowSize = ((24 * width + 31) / 32) * 4;
         dataSize = rowSize * abs(height);
     }
 
     data = new unsigned char[dataSize];
-
-    // Saltar al comienzo de los datos y leerlos
     file.seekg(offset, ios::beg);
     file.read((char*)data, dataSize);
     file.close();
     return true;
 }
 
+// === Guardar imagen BMP ===
 bool guardarBMP(const char* ruta, unsigned char* header, unsigned char* data, int dataSize) {
     ofstream file(ruta, ios::binary);
     if (!file) return false;
@@ -47,49 +44,104 @@ bool guardarBMP(const char* ruta, unsigned char* header, unsigned char* data, in
     return true;
 }
 
+// === Aplicar XOR entre dos imágenes ===
 void aplicarXOR(unsigned char* img1, unsigned char* img2, unsigned char* salida, int size) {
     for (int i = 0; i < size; i++) {
         salida[i] = img1[i] ^ img2[i];
     }
 }
 
+// === Verificar enmascaramiento con archivo .txt ===
+bool verificarEnmascaramiento(
+    unsigned char* imagen,
+    unsigned char* mascara,
+    const char* archivoTxt,
+    int desplazamiento,
+    int tamMascara
+    ) {
+    ifstream file(archivoTxt);
+    if (!file) {
+        cout << "No se pudo abrir el archivo " << archivoTxt << endl;
+        return false;
+    }
+
+    int sDesdeArchivo;
+    file >> sDesdeArchivo;
+
+    if (sDesdeArchivo != desplazamiento) {
+        cout << "El desplazamiento del archivo no coincide." << endl;
+        return false;
+    }
+
+    for (int k = 0; k < tamMascara; k += 3) {
+        int r, g, b;
+        if (!(file >> r >> g >> b)) {
+            cout << "Error leyendo valores RGB en archivo." << endl;
+            return false;
+        }
+
+        int r_calc = imagen[k + desplazamiento + 0] + mascara[k + 0];
+        int g_calc = imagen[k + desplazamiento + 1] + mascara[k + 1];
+        int b_calc = imagen[k + desplazamiento + 2] + mascara[k + 2];
+
+        if (r != r_calc || g != g_calc || b != b_calc) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 int main() {
-    unsigned char header1[HEADER_SIZE];
-    unsigned char header2[HEADER_SIZE];
-    unsigned char* img1 = nullptr;
-    unsigned char* img2 = nullptr;
+    unsigned char headerID[HEADER_SIZE], headerIM[HEADER_SIZE], headerM[HEADER_SIZE];
+    unsigned char *dataID = nullptr, *dataIM = nullptr, *dataXOR = nullptr, *mascara = nullptr;
+    int sizeID = 0, sizeIM = 0, sizeMascara = 0;
 
-    int size1 = 0, size2 = 0;
-
-    if (!cargarBMP("ID.bmp", header1, img1, size1)) {
+    // Cargar imágenes
+    if (!cargarBMP("ID.bmp", headerID, dataID, sizeID)) {
         cout << "Error al cargar ID.bmp" << endl;
         return 1;
     }
 
-    if (!cargarBMP("IM.bmp", header2, img2, size2)) {
+    if (!cargarBMP("IM.bmp", headerIM, dataIM, sizeIM)) {
         cout << "Error al cargar IM.bmp" << endl;
-        delete[] img1;
+        delete[] dataID;
         return 1;
     }
 
-    if (size1 != size2) {
-        cout << "Las imágenes no tienen el mismo tamaño." << endl;
-            delete[] img1;
-        delete[] img2;
+    if (!cargarBMP("M.bmp", headerM, mascara, sizeMascara)) {
+        cout << "Error al cargar M.bmp" << endl;
+        delete[] dataID;
+        delete[] dataIM;
         return 1;
     }
 
-    unsigned char* resultado = new unsigned char[size1];
-    aplicarXOR(img1, img2, resultado, size1);
+    if (sizeID != sizeIM) {
+        cout << "Las imágenes ID y IM no tienen el mismo tamaño." << endl;
+            delete[] dataID;
+        delete[] dataIM;
+        delete[] mascara;
+        return 1;
+    }
 
-    if (!guardarBMP("resultado.bmp", header1, resultado, size1)) {
-        cout << "Error al guardar la imagen resultante." << endl;
+    // Aplicar XOR
+    dataXOR = new unsigned char[sizeID];
+    aplicarXOR(dataID, dataIM, dataXOR, sizeID);
+    guardarBMP("resultado.bmp", headerID, dataXOR, sizeID);
+
+    // Verificar enmascaramiento con el archivo .txt
+    int desplazamiento = 100; // puedes cambiarlo o extraerlo del archivo si prefieres
+    if (verificarEnmascaramiento(dataXOR, mascara, "M1.txt", desplazamiento, sizeMascara)) {
+        cout << "✅ Enmascaramiento coincide con M1.txt" << endl;
     } else {
-        cout << "Imagen XOR guardada como resultado.bmp" << endl;
+        cout << "❌ Enmascaramiento NO coincide con M1.txt" << endl;
     }
 
-    delete[] img1;
-    delete[] img2;
-    delete[] resultado;
+    // Limpiar memoria
+    delete[] dataID;
+    delete[] dataIM;
+    delete[] dataXOR;
+    delete[] mascara;
+
     return 0;
 }
