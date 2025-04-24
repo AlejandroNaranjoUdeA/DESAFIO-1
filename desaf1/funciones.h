@@ -20,7 +20,14 @@ void probarYGuardarTransformaciones(
     const char* archivoTxt,
     int desplazamiento
     );
-
+void reconstruirImagen(
+    unsigned char* imagenFinal,
+    unsigned char* im,
+    int size,
+    const char* archivoOrden,
+    const char* archivoSalida,
+    const char* nombreHeader
+    );
 bool archivoExiste(const char* nombre);
 
 #endif // FUNCIONES_H

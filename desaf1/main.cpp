@@ -12,6 +12,10 @@ int main() {
     if (!cargarBMP("M.bmp", headerM, mascara, sizeMascara)) return 1;
     if (sizeID != sizeIM) return 1;
 
+    // Vaciar el archivo de orden previo (por si existe)
+    std::ofstream limpiar("orden_transformaciones.txt");
+    limpiar.close();
+
     for (int i = 1; i <= 10; i++) {
         char nombreArchivo[20];
         sprintf(nombreArchivo, "M%d.txt", i);
@@ -29,6 +33,11 @@ int main() {
             std::cout << "No se pudo leer desplazamiento de " << nombreArchivo << std::endl;
         }
     }
+
+    // Reconstruir imagen original aplicando transformaciones inversas
+    std::cout << "\n🛠️ Reconstruyendo imagen original..." << std::endl;
+    reconstruirImagen(dataID, dataIM, sizeID, "orden_transformaciones.txt", "IO_reconstruida.bmp", "ID.bmp");
+
 
     delete[] dataID;
     delete[] dataIM;

@@ -193,6 +193,59 @@ void probarYGuardarTransformaciones(
     }
 }
 
+//Aplica una secuencia de transformaciones inversas y guarda resultado
+void reconstruirImagen(
+    unsigned char* imagenFinal,
+    unsigned char* im,
+    int size,
+    const char* archivoOrden,
+    const char* archivoSalida,
+    const char* nombreHeader
+    ) {
+    unsigned char header[54];
+    ifstream hfile(nombreHeader, ios::binary);
+    hfile.read((char*)header, 54);
+    hfile.close();
+
+    unsigned char* actual = new unsigned char[size];
+    memcpy(actual, imagenFinal, size);
+    unsigned char* temp = new unsigned char[size];
+
+    ifstream orden(archivoOrden);
+    char nombre[20];
+    int pasos[10];
+    int total;
+
+    while (orden >> nombre) {
+        total = 0;
+        char c;
+        while (orden.get(c) && c != '\n') {
+            if (isdigit(c)) {
+                orden.putback(c);
+                orden >> pasos[total++];
+            }
+        }
+
+        // Aplicar en orden inverso
+        for (int i = total - 1; i >= 0; i--) {
+            int op = pasos[i];
+
+            if (op == 1) {
+                aplicarXOR(actual, im, temp, size); // XOR es su propio inverso
+            } else if (op == 2) {
+                aplicarRotacion(actual, temp, size, 3, false); // inversa: rotar izq
+            } else if (op == 3) {
+                aplicarRotacion(actual, temp, size, 3, true);  // inversa: rotar der
+            }
+            memcpy(actual, temp, size);
+        }
+    }
+
+    guardarBMP(archivoSalida, header, actual, size);
+    delete[] actual;
+    delete[] temp;
+}
+
 bool archivoExiste(const char* nombre) {
     ifstream file(nombre);
     return file.good();
