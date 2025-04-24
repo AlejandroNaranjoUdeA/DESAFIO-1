@@ -138,8 +138,27 @@ bool probarTransformaciones(unsigned char* base, unsigned char* mascara, unsigne
     return ok;
 }
 
-// === COMBINACIONES AUTOMÁTICAS ===
-void probarTodasCombinaciones(unsigned char* base, unsigned char* mascara, unsigned char* im, int size, int tamMascara, const char* archivoTxt, int desplazamiento) {
+void guardarTransformacion(const char* nombreArchivo, int* secuencia, int largo) {
+    FILE* f = fopen("orden_transformaciones.txt", "a");
+    if (!f) return;
+
+    fprintf(f, "%s:", nombreArchivo);
+    for (int i = 0; i < largo; i++) {
+        fprintf(f, " %d", secuencia[i]);
+    }
+    fprintf(f, "\n");
+    fclose(f);
+}
+
+void probarYGuardarTransformaciones(
+    unsigned char* base,
+    unsigned char* mascara,
+    unsigned char* im,
+    int size,
+    int tamMascara,
+    const char* archivoTxt,
+    int desplazamiento
+    ) {
     int ops[3], params[3];
     int tipos[] = {1, 2, 3}; // 1=XOR, 2=ROTDER, 3=ROTI
 
@@ -148,7 +167,8 @@ void probarTodasCombinaciones(unsigned char* base, unsigned char* mascara, unsig
         params[0] = (tipos[i] == 1) ? 0 : 3;
 
         if (probarTransformaciones(base, mascara, im, size, tamMascara, archivoTxt, desplazamiento, ops, params, 1)) {
-            cout << "Coincide con: " << ops[0] << endl;
+            int secuencia[1] = { ops[0] };
+            guardarTransformacion(archivoTxt, secuencia, 1);
         }
 
         for (int j = 0; j < 3; j++) {
@@ -156,7 +176,8 @@ void probarTodasCombinaciones(unsigned char* base, unsigned char* mascara, unsig
             params[1] = (tipos[j] == 1) ? 0 : 3;
 
             if (probarTransformaciones(base, mascara, im, size, tamMascara, archivoTxt, desplazamiento, ops, params, 2)) {
-                cout << "Coincide con: " << ops[0] << " -> " << ops[1] << endl;
+                int secuencia[2] = { ops[0], ops[1] };
+                guardarTransformacion(archivoTxt, secuencia, 2);
             }
 
             for (int k = 0; k < 3; k++) {
@@ -164,7 +185,8 @@ void probarTodasCombinaciones(unsigned char* base, unsigned char* mascara, unsig
                 params[2] = (tipos[k] == 1) ? 0 : 3;
 
                 if (probarTransformaciones(base, mascara, im, size, tamMascara, archivoTxt, desplazamiento, ops, params, 3)) {
-                    cout << "Coincide con: " << ops[0] << " -> " << ops[1] << " -> " << ops[2] << endl;
+                    int secuencia[3] = { ops[0], ops[1], ops[2] };
+                    guardarTransformacion(archivoTxt, secuencia, 3);
                 }
             }
         }

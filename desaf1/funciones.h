@@ -10,7 +10,17 @@ void aplicarDesplazamiento(unsigned char* imagen, unsigned char* resultado, int 
 
 bool verificarEnmascaramiento(unsigned char* imagen, unsigned char* mascara, const char* archivoTxt, int desplazamiento, int tamMascara);
 bool probarTransformaciones(unsigned char* base, unsigned char* mascara, unsigned char* im, int size, int tamMascara, const char* archivoTxt, int desplazamiento, int* operaciones, int* parametros, int numOps);
-void probarTodasCombinaciones(unsigned char* base, unsigned char* mascara, unsigned char* im, int size, int tamMascara, const char* archivoTxt, int desplazamiento);
+void guardarTransformacion(const char* nombreArchivo, int* secuencia, int largo);
+void probarYGuardarTransformaciones(
+    unsigned char* base,
+    unsigned char* mascara,
+    unsigned char* im,
+    int size,
+    int tamMascara,
+    const char* archivoTxt,
+    int desplazamiento
+    );
+
 bool archivoExiste(const char* nombre);
 
 #endif // FUNCIONES_H

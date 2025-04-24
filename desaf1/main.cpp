@@ -24,7 +24,7 @@ int main() {
         file.close();
 
         if (desplazamiento >= 0) {
-            probarTodasCombinaciones(dataID, mascara, dataIM, sizeID, sizeMascara, nombreArchivo, desplazamiento);
+            probarYGuardarTransformaciones(dataID, mascara, dataIM, sizeID, sizeMascara, nombreArchivo, desplazamiento);
         } else {
             std::cout << "No se pudo leer desplazamiento de " << nombreArchivo << std::endl;
         }
