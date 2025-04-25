@@ -1,9 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <cmath>
 #include "funciones.h"
 
 using namespace std;
+
+//implementacion de funciones:
 
 const int HEADER_SIZE = 54;
 
@@ -244,6 +247,47 @@ void reconstruirImagen(
     guardarBMP(archivoSalida, header, actual, size);
     delete[] actual;
     delete[] temp;
+}
+
+void compararImagenes(
+    const char* originalPath,
+    const char* reconstruidaPath
+    ) {
+    unsigned char headerO[54], headerR[54];
+    unsigned char *dataO = nullptr, *dataR = nullptr;
+    int sizeO = 0, sizeR = 0;
+
+    if (!cargarBMP(originalPath, headerO, dataO, sizeO)) {
+        std::cout << "No se pudo cargar la imagen original." << std::endl;
+        return;
+    }
+    if (!cargarBMP(reconstruidaPath, headerR, dataR, sizeR)) {
+        std::cout << "No se pudo cargar la imagen reconstruida." << std::endl;
+        delete[] dataO;
+        return;
+    }
+
+    if (sizeO != sizeR) {
+        cout << "Las imágenes no tienen el mismo tamaño." << std::endl;
+        delete[] dataO;
+        delete[] dataR;
+        return;
+    }
+
+    int diferentes = 0;
+    for (int i = 0; i < sizeO; i++) {
+        if (dataO[i] != dataR[i]) {
+            diferentes++;
+        }
+    }
+
+    std::cout << "Comparacion completa : " << std::endl;
+    std::cout << "Tamaño total de bytes: " << sizeO << std::endl;
+    std::cout << "Bytes diferentes     : " << diferentes << std::endl;
+    std::cout << "Coincidencia         : " << 100.0 * (sizeO - diferentes) / sizeO << " %" << std::endl;
+
+    delete[] dataO;
+    delete[] dataR;
 }
 
 bool archivoExiste(const char* nombre) {

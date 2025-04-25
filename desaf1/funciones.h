@@ -1,6 +1,8 @@
 #ifndef FUNCIONES_H
 #define FUNCIONES_H
 
+//declaracion de funciones:
+
 bool cargarBMP(const char* ruta, unsigned char* header, unsigned char*& data, int& dataSize);
 bool guardarBMP(const char* ruta, unsigned char* header, unsigned char* data, int dataSize);
 
@@ -27,6 +29,10 @@ void reconstruirImagen(
     const char* archivoOrden,
     const char* archivoSalida,
     const char* nombreHeader
+    );
+void compararImagenes(
+    const char* originalPath,
+    const char* reconstruidaPath
     );
 bool archivoExiste(const char* nombre);
 

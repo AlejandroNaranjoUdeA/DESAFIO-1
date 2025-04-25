@@ -38,6 +38,10 @@ int main() {
     std::cout << "\n🛠️ Reconstruyendo imagen original..." << std::endl;
     reconstruirImagen(dataID, dataIM, sizeID, "orden_transformaciones.txt", "IO_reconstruida.bmp", "ID.bmp");
 
+    //ahora, nos dira cual es la coincidencia con de las imagenes:
+    compararImagenes("IO.bmp", "IO_reconstruida.bmp");
+
+
 
     delete[] dataID;
     delete[] dataIM;
