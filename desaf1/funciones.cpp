@@ -268,7 +268,7 @@ void compararImagenes(
     }
 
     if (sizeO != sizeR) {
-        cout << "Las imágenes no tienen el mismo tamaño." << std::endl;
+        cout << "Las imagenes no tienen el mismo tamano." << std::endl;
         delete[] dataO;
         delete[] dataR;
         return;
@@ -282,7 +282,7 @@ void compararImagenes(
     }
 
     std::cout << "Comparacion completa : " << std::endl;
-    std::cout << "Tamaño total de bytes: " << sizeO << std::endl;
+    std::cout << "Tamano total de bytes: " << sizeO << std::endl;
     std::cout << "Bytes diferentes     : " << diferentes << std::endl;
     std::cout << "Coincidencia         : " << 100.0 * (sizeO - diferentes) / sizeO << " %" << std::endl;
 
